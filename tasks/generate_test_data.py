@@ -4,6 +4,7 @@
 Functions for generate the test data for tasks
 """
 
+import shutil
 from faker import Faker
 from pathlib import Path
 from typing import Union
@@ -43,6 +44,24 @@ def generate_text_files(n: int = 30, folder: Union[Path, str] = "__data__") -> N
         get_absolute_path(folder / f"text_{i:05d}.txt").write_text(text, encoding="utf-8")
 
 
+def clear_data_folder(folder: Union[Path, str] = "__data__") -> None:
+    """
+    Deletes all files and subfolders from the specified folder.
+
+    :param folder: The folder that needs to be cleared
+    """
+    path = get_absolute_path(folder)
+    if not path.exists():
+        return
+    for item in path.iterdir():
+        try:
+            if item.is_file() or item.is_symlink():
+                item.unlink()
+            elif item.is_dir():
+                shutil.rmtree(item)
+        except Exception as e:
+            print(f"Failed to delete the {item}: {e}")
+
 def test_data_generate(keywords_count: int = 10, files_count: int = 100) -> None:
     """
     Generates a set of fake data for tasks.
@@ -50,5 +69,6 @@ def test_data_generate(keywords_count: int = 10, files_count: int = 100) -> None
     :param keywords_count: Number of keywords for the search
     :param files_count: Number of files to search through
     """
+    clear_data_folder(folder=get_absolute_path(Path(__file__).parent / "./__data__/"))
     generate_keywords(n=keywords_count, file=get_absolute_path(Path(__file__).parent / "./__data__/keywords.txt"))
     generate_text_files(n=files_count, folder=get_absolute_path(Path(__file__).parent / "./__data__/"))
